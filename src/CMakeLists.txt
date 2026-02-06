@@ -1,0 +1,4 @@
+add_subdirectory(g2o_types)
+add_subdirectory(imu)
+add_subdirectory(matching)
+add_subdirectory(tools)
