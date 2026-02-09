@@ -1,6 +1,5 @@
 #pragma once
 
-#include "g2o_types/types.h"
 #include "imu/ImuInitializer.h"
 #include "imu/imu.h"
 #include "matching/NDT_INC.h"

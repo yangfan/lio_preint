@@ -1,4 +1,5 @@
 #include "lio/LioPreint.h"
+#include "g2o_types/types.h"
 
 #include <execution>
 
@@ -69,7 +70,6 @@ void LioPreint::process_sync_data(const Sync::DataGroup &lidar_imu) {
     return;
   }
 
-  //   print();
   predict();
 
   undistort();
@@ -421,7 +421,7 @@ void LioPreint::optimize() {
   H.block<6, 6>(15, 15) += edge_ndt->Hessian();
 
   // bg_i, bg_j
-  //    9,    9
+  //    9,   24
   const Eigen::Matrix<double, 6, 6> &H_bg = edge_bg->Hessian();
   H.block<3, 3>(9, 9) += H_bg.block<3, 3>(0, 0);
   H.block<3, 3>(9, 24) += H_bg.block<3, 3>(0, 3);
@@ -437,7 +437,7 @@ void LioPreint::optimize() {
   H.block<3, 3>(27, 27) += H_ba.block<3, 3>(3, 3);
 
   // rot_i, rot_j, vel_i, vel_j, pos_i, pos_j, ba_i, bg_i
-  //     0,    15,    16,    21,     3,    18,   12,    9
+  //     0,    15,     6,    21,     3,    18,   12,    9
   const Eigen::Matrix<double, 24, 24> H_preint = edge_preint->Hessian();
   std::vector<int> idx = {0, 15, 6, 21, 3, 18, 12, 9};
   for (size_t i = 0; i < idx.size(); ++i) {
@@ -449,7 +449,7 @@ void LioPreint::optimize() {
   marginalize(H);
 
   LOG(INFO) << "prior trace:" << prior_info_.trace();
-  normalize_vel();
+  // normalize_vel();
 }
 
 void LioPreint::marginalize(const Eigen::Matrix<double, 30, 30> &H) {
