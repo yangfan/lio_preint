@@ -45,5 +45,6 @@ if(BUILD_TESTING)
 endif()
 
 add_subdirectory(src)
+add_subdirectory(test)
 
 ament_package()

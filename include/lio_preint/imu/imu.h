@@ -4,6 +4,7 @@
 
 #include <Eigen/Core>
 #include <glog/logging.h>
+#include <sophus/se3.hpp>
 #include <sophus/so3.hpp>
 
 struct IMU {
@@ -28,6 +29,8 @@ struct IMUState {
     res << pos, vel, rot.log(), bias_g, bias_a, gravity;
     return res;
   }
+  Sophus::SE3d SE3() const { return Sophus::SE3d(rot, pos); }
+
   double timestamp{0.0};
   Eigen::Vector3d pos = Eigen::Vector3d::Zero();
   Eigen::Vector3d vel = Eigen::Vector3d::Zero();
@@ -35,17 +38,6 @@ struct IMUState {
   Eigen::Vector3d bias_g = Eigen::Vector3d::Zero();
   Eigen::Vector3d bias_a = Eigen::Vector3d::Zero();
   Eigen::Vector3d gravity{0, 0, -9.8};
-};
-
-class IMUIntegrator {
-public:
-  IMUIntegrator() = default;
-  IMUIntegrator(const IMUState &init_state) : state_(init_state) {}
-  bool integrate(const IMU &data);
-  IMUState state() const { return state_; }
-
-private:
-  IMUState state_;
 };
 
 class IMUPreintegrator {

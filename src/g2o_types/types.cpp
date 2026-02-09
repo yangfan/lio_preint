@@ -109,20 +109,30 @@ void EdgePreint::linearizeOplus() {
   _jacobianOplus[7].block<3, 3>(6, 0) = -preintegrator_->dp_dbg();
 }
 
+Eigen::Matrix<double, 24, 24> EdgePreint::Hessian() {
+  linearizeOplus();
+  Eigen::Matrix<double, 9, 24> Jacobian = Eigen::Matrix<double, 9, 24>::Zero();
+  for (int i = 0; i < 8; ++i) {
+    Jacobian.block<9, 3>(0, i * 3) = _jacobianOplus[i];
+  }
+
+  return Jacobian.transpose() * information() * Jacobian;
+}
+
 void EdgePrior::computeError() {
   auto rot_i = static_cast<VertexSO3 *>(_vertices[0])->estimate();
   auto pos_i = static_cast<VertexPos *>(_vertices[1])->estimate();
   auto vel_i = static_cast<VertexVel *>(_vertices[2])->estimate();
-  auto bias_ai = static_cast<VertexBiasA *>(_vertices[3])->estimate();
-  auto bias_gi = static_cast<VertexBiasG *>(_vertices[4])->estimate();
+  auto bias_gi = static_cast<VertexBiasG *>(_vertices[3])->estimate();
+  auto bias_ai = static_cast<VertexBiasA *>(_vertices[4])->estimate();
 
   const Eigen::Vector3d err_rot = (prior_.rot.inverse() * rot_i).log();
-  const Eigen::Vector3d err_vel = vel_i - prior_.vel;
   const Eigen::Vector3d err_pos = pos_i - prior_.pos;
-  const Eigen::Vector3d err_ba = bias_ai - prior_.bias_a;
+  const Eigen::Vector3d err_vel = vel_i - prior_.vel;
   const Eigen::Vector3d err_bg = bias_gi - prior_.bias_g;
+  const Eigen::Vector3d err_ba = bias_ai - prior_.bias_a;
 
-  _error << err_rot, err_vel, err_pos, err_ba, err_bg;
+  _error << err_rot, err_pos, err_vel, err_bg, err_ba;
 }
 void EdgePrior::linearizeOplus() {
   auto rot_i = static_cast<VertexSO3 *>(_vertices[0])->estimate();
@@ -141,6 +151,17 @@ void EdgePrior::linearizeOplus() {
 
   _jacobianOplus[4].setZero();
   _jacobianOplus[4].block<3, 3>(12, 0) = Eigen::Matrix3d::Identity();
+}
+Eigen::Matrix<double, 15, 15> EdgePrior::Hessian() {
+  linearizeOplus();
+
+  Eigen::Matrix<double, 15, 15> Jacobian =
+      Eigen::Matrix<double, 15, 15>::Zero();
+  for (int i = 0; i < 5; ++i) {
+    Jacobian.block<15, 3>(0, 3 * i) = _jacobianOplus[i];
+  }
+
+  return Jacobian.transpose() * information() * Jacobian;
 }
 
 void EdgeSE3::computeError() {
@@ -161,6 +182,15 @@ void EdgeSE3::linearizeOplus() {
   _jacobianOplusXj.setZero();
   _jacobianOplusXj.block<3, 3>(3, 0).setIdentity();
 }
+Eigen::Matrix<double, 6, 6> EdgeSE3::Hessian() {
+  linearizeOplus();
+
+  Eigen::Matrix<double, 6, 6> Jacobian = Eigen::Matrix<double, 6, 6>::Zero();
+  Jacobian.block<6, 3>(0, 0) = _jacobianOplusXi;
+  Jacobian.block<6, 3>(0, 3) = _jacobianOplusXj;
+
+  return Jacobian.transpose() * information() * Jacobian;
+}
 
 void EdgeBiasA::computeError() {
   _error = static_cast<VertexBiasA *>(_vertices[1])->estimate() -
@@ -170,6 +200,15 @@ void EdgeBiasA::linearizeOplus() {
   _jacobianOplusXi = -Eigen::Matrix3d::Identity();
   _jacobianOplusXj.setIdentity();
 }
+Eigen::Matrix<double, 6, 6> EdgeBiasA::Hessian() {
+  linearizeOplus();
+
+  Eigen::Matrix<double, 3, 6> Jacobian = Eigen::Matrix<double, 3, 6>::Zero();
+  Jacobian.block<3, 3>(0, 0) = _jacobianOplusXi;
+  Jacobian.block<3, 3>(0, 3) = _jacobianOplusXj;
+
+  return Jacobian.transpose() * information() * Jacobian;
+}
 
 void EdgeBiasG::computeError() {
   _error = static_cast<VertexBiasA *>(_vertices[1])->estimate() -
@@ -178,4 +217,13 @@ void EdgeBiasG::computeError() {
 void EdgeBiasG::linearizeOplus() {
   _jacobianOplusXi = -Eigen::Matrix3d::Identity();
   _jacobianOplusXj.setIdentity();
+}
+Eigen::Matrix<double, 6, 6> EdgeBiasG::Hessian() {
+  linearizeOplus();
+
+  Eigen::Matrix<double, 3, 6> Jacobian = Eigen::Matrix<double, 3, 6>::Zero();
+  Jacobian.block<3, 3>(0, 0) = _jacobianOplusXi;
+  Jacobian.block<3, 3>(0, 3) = _jacobianOplusXj;
+
+  return Jacobian.transpose() * information() * Jacobian;
 }

@@ -20,15 +20,27 @@
 class VertexVec3 : public g2o::BaseVertex<3, Eigen::Vector3d> {
 public:
   VertexVec3() {}
-  virtual bool read(std::istream &is) override { return false; }
-  virtual bool write(std::ostream &os) const override { return false; }
+  virtual bool read(std::istream &is) override {
+    is.clear();
+    return false;
+  }
+  virtual bool write(std::ostream &os) const override {
+    os.clear();
+    return false;
+  }
   virtual void setToOriginImpl() override { _estimate.setZero(); }
   virtual void oplusImpl(const double *update) override;
 };
 
 class VertexSO3 : public g2o::BaseVertex<3, Sophus::SO3d> {
-  virtual bool read(std::istream &is) override { return false; }
-  virtual bool write(std::ostream &os) const override { return false; }
+  virtual bool read(std::istream &is) override {
+    is.clear();
+    return false;
+  }
+  virtual bool write(std::ostream &os) const override {
+    os.clear();
+    return false;
+  }
   virtual void setToOriginImpl() override { _estimate = Sophus::SO3d(); }
   virtual void oplusImpl(const double *update) override {
     _estimate *= Sophus::SO3d::exp(Eigen::Map<const Eigen::Vector3d>(update));
@@ -73,6 +85,8 @@ public:
   virtual void computeError() override;
   virtual void linearizeOplus() override;
 
+  Eigen::Matrix<double, 24, 24> Hessian();
+
 private:
   IMUPreintegrator *preintegrator_;
   double t_ij_ = 0.0;
@@ -93,6 +107,8 @@ public:
   virtual void computeError() override;
   virtual void linearizeOplus() override;
 
+  Eigen::Matrix<double, 15, 15> Hessian();
+
 private:
   IMUState prior_;
 };
@@ -111,10 +127,13 @@ public:
 
   virtual void computeError() override;
   virtual void linearizeOplus() override;
+
+  Eigen::Matrix<double, 6, 6> Hessian();
 };
 
 class EdgeBiasA
     : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, VertexBiasA, VertexBiasA> {
+public:
   virtual bool read(std::istream &is) override {
     is.clear();
     return false;
@@ -126,10 +145,13 @@ class EdgeBiasA
 
   virtual void computeError() override;
   virtual void linearizeOplus() override;
+
+  Eigen::Matrix<double, 6, 6> Hessian();
 };
 
 class EdgeBiasG
     : public g2o::BaseBinaryEdge<3, Eigen::Vector3d, VertexBiasG, VertexBiasG> {
+public:
   virtual bool read(std::istream &is) override {
     is.clear();
     return false;
@@ -141,4 +163,6 @@ class EdgeBiasG
 
   virtual void computeError() override;
   virtual void linearizeOplus() override;
+
+  Eigen::Matrix<double, 6, 6> Hessian();
 };
