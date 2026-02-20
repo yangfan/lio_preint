@@ -494,5 +494,8 @@ void LioPreint::normalize_vel() {
 void LioPreint::save_map(const std::string &map_file) {
   if (viewer_) {
     viewer_->save_map(map_file);
+    LOG(INFO) << "Saved map to " << map_file;
+    LOG(INFO) << "Close viewer to stop the program.";
+    viewer_->spin();
   }
 }

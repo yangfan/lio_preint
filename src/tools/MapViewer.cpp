@@ -24,16 +24,33 @@ bool MapViewer::add_pointcloud(
   voxel_filter_.setInputCloud(map_);
   voxel_filter_.filter(*map_);
 
-  visualizer_.removePointCloud("map");
-  visualizer_.removeCoordinateSystem("vehicle");
-
   pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>
       field_color(map_, "z");
-  visualizer_.addPointCloud(map_, field_color, "map");
-
   Eigen::Affine3f T;
   T.matrix() = body_pose.matrix().cast<float>();
-  visualizer_.addCoordinateSystem(5, T, "vehicle");
+
+  if (kf_num_++ % 10 == 0) {
+
+    const pcl::PointXYZ astart(body_pose.translation().x(),
+                               body_pose.translation().y(),
+                               body_pose.translation().z());
+    const Eigen::Vector3d arrow_end =
+        body_pose * Eigen::Vector3d(0.0, -1.0, 0.0);
+    const pcl::PointXYZ aend(arrow_end.x(), arrow_end.y(), arrow_end.z());
+
+    visualizer_.addArrow(aend, astart, 255.0, 0, 0, false,
+                         std::to_string(kf_num_));
+  }
+
+  if (!initialized_) {
+    visualizer_.addPointCloud(map_, field_color, "map");
+    visualizer_.addCoordinateSystem(5, T, "vehicle");
+    initialized_ = true;
+  } else {
+    visualizer_.updatePointCloud(map_, field_color, "map");
+    visualizer_.updateCoordinateSystemPose("vehicle", T);
+  }
+
   visualizer_.spinOnce(1);
 
   if (map_->size() > max_pt_num_) {
