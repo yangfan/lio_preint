@@ -42,7 +42,7 @@ bool IMUPreintegrator::integrate(const IMU &imu_data) {
   cov_preint_ =
       A * cov_preint_.eval() * A.transpose() + B * cov_noise_ * B.transpose();
 
-  // 3. update jocobian of bias for bias update
+  // 3. update jacobian of bias for bias update
   dp_dba_ =
       dp_dba_.eval() + dv_dba_ * dt - 0.5 * measurement_ij_.rot.matrix() * dt2;
   dp_dbg_ = dp_dbg_.eval() + dv_dbg_ * dt - 0.5 * dR * dR_dbg_ * dt2;

@@ -26,6 +26,9 @@ bool MapViewer::add_pointcloud(
 
   pcl::visualization::PointCloudColorHandlerGenericField<pcl::PointXYZI>
       field_color(map_, "z");
+  pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> scan_color(
+      map_, 255, 255, 255);
+
   Eigen::Affine3f T;
   T.matrix() = body_pose.matrix().cast<float>();
 
@@ -44,10 +47,12 @@ bool MapViewer::add_pointcloud(
 
   if (!initialized_) {
     visualizer_.addPointCloud(map_, field_color, "map");
+    visualizer_.addPointCloud(pointcloud, scan_color, "scan");
     visualizer_.addCoordinateSystem(5, T, "vehicle");
     initialized_ = true;
   } else {
     visualizer_.updatePointCloud(map_, field_color, "map");
+    visualizer_.updatePointCloud(pointcloud, scan_color, "scan");
     visualizer_.updateCoordinateSystemPose("vehicle", T);
   }
 
