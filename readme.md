@@ -104,7 +104,7 @@ Goal: Estimate the states at each time step given synchronized lidar and imu dat
 #### Code
 
 - [source code](src/lio/LioPreint.cpp)
-- [unit test](test/preint_test.cpp)
+- [unit test](test/preint_test.cpp): `./test/preint_test`
 
 ### Data synchronization
 
@@ -118,4 +118,4 @@ Goal: Match point cloud data with imu readings such that the lidar points from a
 
 #### Code
 
--[source code](src/tools/Sync.cpp)
+- [source code](src/tools/Sync.cpp)
