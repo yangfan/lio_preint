@@ -13,7 +13,7 @@ bool LioPreint::config(const std::string &yaml_file) {
   imu_initializer_.config(yaml_file);
 
   if (params_.viewer_on) {
-    viewer_ = std::make_unique<MapViewer>("IESKF LIO", 0.5);
+    viewer_ = std::make_unique<MapViewer>("IMU Preintegration LIO", 0.5);
   }
 
   NDT_INC::Params ndt_params;

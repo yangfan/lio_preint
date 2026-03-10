@@ -106,6 +106,10 @@ Goal: Estimate the states at each time step given synchronized lidar and imu dat
 - [source code](src/lio/LioPreint.cpp)
 - [unit test](test/preint_test.cpp): `./test/preint_test`
 
+   <img src="./doc/preint.gif" width="600" alt="preint">
+
+   <img src="./doc/NCLT_map.png" width="600" alt="NCLT map">
+
 ### Data synchronization
 
 Goal: Match point cloud data with imu readings such that the lidar points from an entire scan is covered imu readings. The motion of the lidar sensor during the scan can therefore be estimated by interpolating the nearest pair of imu readings.
